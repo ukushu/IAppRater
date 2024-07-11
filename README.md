@@ -10,7 +10,7 @@ iOS, MacOS
 *  --//-- minimum days of usage --//--
 * Do not ask to rate your app if this version already was rated by user
 * Ability to open standard "Rate Me" alert and as alternative open "Rate me" popup inside of AppStore window
-* Ability to work with logic related to data of lib like "show some button if need to rate"
+* Ability to work with custom logic like "show some button if need to rate"
 
 
 ## How to use, sample with SwiftUI:
@@ -39,6 +39,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppDelegate.shared = self
+        
+        // no nee custom show logic
+        //appRater = IAppRater(minLaunches: 10,
+        //                     minDays: 15,
+        //                     rateWndType: .standardAlert
+        //)
         
         appRater = IAppRater(minLaunches: 10,
                              minDays: 15,
