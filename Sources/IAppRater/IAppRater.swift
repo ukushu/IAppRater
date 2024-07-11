@@ -11,7 +11,7 @@ public class IAppRater {
     
     private let other: () -> Bool
     
-    init(minLaunches: Int = 0, minDays: Int = 0, other: @escaping () -> Bool = { true }, rateWndType: RateType) {
+    public init(minLaunches: Int = 0, minDays: Int = 0, other: @escaping () -> Bool = { true }, rateWndType: RateType) {
         self.minLaunches = minLaunches
         self.minDays = minDays
         self.rateWndType = rateWndType
