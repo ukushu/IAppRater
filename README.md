@@ -72,9 +72,12 @@ struct MainView : View {
 [![Standard OS's "Rate my app" alert][1]][1]
 
 // Or we can call appStore's alert "Rate my app" 
+```
+appRater = IAppRater(...., rateWndType: .appStoreWnd(appId: "1473808464") )
+```
 
-
-
+[![enter image description here][2]][2]
 
 
   [1]: https://i.sstatic.net/A2gyxsA8.png
+  [2]: https://i.sstatic.net/IYdbRLUW.png
