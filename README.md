@@ -40,12 +40,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppDelegate.shared = self
         
-        // no nee custom show logic
+        // if we do not need custom display alert logic
         //appRater = IAppRater(minLaunches: 10,
         //                     minDays: 15,
         //                     rateWndType: .standardAlert
         //)
         
+        // if we need custom display logic
         appRater = IAppRater(minLaunches: 10,
                              minDays: 15,
                              other: { Stats.shared.sessions.count > 100 },
