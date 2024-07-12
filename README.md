@@ -1,5 +1,8 @@
 # IAppRater 
 
+<img src="https://github.com/ukushu/IAppRater/blob/main/IAppRaterLogo.png" width="170">
+
+
 Tiny lib to show "Rate my app" alert for macOS and iOS apps.
 
 ## SupportedOS:
