@@ -81,8 +81,8 @@ public extension IAppRater {
         set(value) { config.set(value, forKey: "ArrRaterLaunchesCounter") }
     }
     
-    var firstLaunchDate: Date? {
-        get { config.object(forKey: "ArrRaterFirstLaunchDate") as? Date }
+    var firstLaunchDate: Date {
+        get { config.object(forKey: "ArrRaterFirstLaunchDate") as? Date ?? Date.now } //it is not nil for sure, but just for a safe case
         set(value) { config.set(value, forKey: "ArrRaterFirstLaunchDate") }
     }
     
@@ -97,7 +97,7 @@ public extension IAppRater {
     }
     
     var daysAfterFirstLaunch: Int {
-        return firstLaunchDate?.daysDistanceTo(date: Date.now) ?? 0
+        return firstLaunchDate.daysDistanceTo(date: Date.now)
     }
     
     var daysAfterLastReview: Int {
