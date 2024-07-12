@@ -75,7 +75,7 @@ struct MainView : View {
 }
 ```
 
-// We can open standard alert and 
+// We can open standard OS's alert
 [![Standard OS's "Rate my app" alert][1]][1]
 
 // Or we can call appStore's alert "Rate my app" 
