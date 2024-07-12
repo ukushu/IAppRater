@@ -1,3 +1,6 @@
+v1.0.2
+* minor fixes
+
 v1.0.1
 * Tests improvement
 * Improved "other" input on initialization of IAppRater to have ability to use intrnal parameters for user purposes
@@ -6,7 +9,6 @@ v1.0.1
 * Added MIT license
 * Improved ReadMe
 * Logo added
-* 
 
 
 v1.0.0
