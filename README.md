@@ -1,11 +1,11 @@
-#IAppRater 
+# IAppRater 
 
 Tiny lib to show "Rate my app" alert for macOS and iOS apps.
 
-##SupportedOS:
+## SupportedOS:
 iOS, MacOS
 
-##KeyFeatures:
+## KeyFeatures:
 * Ability to set minimal amount of app launches before yout app perform request to rate your app
 *  --//-- minimum days of usage --//--
 * Do not ask to rate your app if this version already was rated by user
