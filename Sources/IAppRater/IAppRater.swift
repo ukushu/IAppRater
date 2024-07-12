@@ -22,7 +22,7 @@ public class IAppRater {
         self.launchesCount += 1
     }
     
-    public var isNeeded: Bool {
+    public var isNeededToRate: Bool {
         guard lastReviewVersion != appVersion,
               other()
         else { return false }
@@ -33,7 +33,7 @@ public class IAppRater {
     
     @discardableResult
     public func requestIfNeeded() -> Bool {
-        guard isNeeded else { return false }
+        guard isNeededToRate else { return false }
         
         request()
         

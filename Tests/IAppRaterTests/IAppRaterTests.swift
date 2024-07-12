@@ -18,20 +18,20 @@ final class IAppRaterTests: XCTestCase {
         // Launch 2
         review = IAppRater.prefs_3_0()
         XCTAssertFalse(review.requestIfNeeded())
-        XCTAssertEqual(review.isNeeded, false)
+        XCTAssertEqual(review.isNeededToRate, false)
         
         // Launch 3, need to show review window
         review = IAppRater.prefs_3_0()
-        XCTAssertEqual(review.isNeeded, true)
+        XCTAssertEqual(review.isNeededToRate, true)
         XCTAssertTrue(review.requestIfNeeded())
         XCTAssertEqual(review.launchesCount, 3)
         XCTAssertNotNil(review.lastReviewDate)
         XCTAssertNotNil(review.lastReviewVersion)
-        XCTAssertEqual(review.isNeeded, false)
+        XCTAssertEqual(review.isNeededToRate, false)
         
         // Launch 4
         review = IAppRater.prefs_3_0()
-        XCTAssertEqual(review.isNeeded, false)
+        XCTAssertEqual(review.isNeededToRate, false)
         XCTAssertFalse(review.requestIfNeeded())
         XCTAssertEqual(review.launchesCount, 4)
     }
@@ -43,14 +43,14 @@ final class IAppRaterTests: XCTestCase {
         
         for i in (1...124) {
             review = IAppRater.prefs_125_0()
-            XCTAssertEqual(review.isNeeded, false)
+            XCTAssertEqual(review.isNeededToRate, false)
             XCTAssertEqual(review.launchesCount, i)
             XCTAssertFalse(review.requestIfNeeded())
         }
         
         //Day 125
         review = IAppRater.prefs_125_0()
-        XCTAssertEqual(review.isNeeded, true)
+        XCTAssertEqual(review.isNeededToRate, true)
         XCTAssertEqual(review.launchesCount, 125)
     }
     
@@ -89,22 +89,22 @@ final class IAppRaterTests: XCTestCase {
         XCTAssertEqual(review.daysAfterFirstLaunch, 124)
         XCTAssertNil(review.lastReviewDate)
         XCTAssertNil(review.lastReviewVersion)
-        XCTAssertEqual(review.isNeeded, false)
+        XCTAssertEqual(review.isNeededToRate, false)
         XCTAssertFalse(review.requestIfNeeded())
         
         // Launch 4 in 125 days after last review
         review.lastReviewDate = Date.now.addingTimeInterval(TimeInterval(days:-125))
         XCTAssertEqual(review.daysAfterLastReview, 125)
-        XCTAssertEqual(review.isNeeded, true)
+        XCTAssertEqual(review.isNeededToRate, true)
         XCTAssertTrue(review.requestIfNeeded())
-        XCTAssertEqual(review.isNeeded, false)
+        XCTAssertEqual(review.isNeededToRate, false)
         XCTAssertEqual(review.launchesCount, 4)
         XCTAssertFalse(review.requestIfNeeded())
         
         // app version is the same, so no need to show
         review.lastReviewVersion = appVersion
         review.lastReviewDate = Date.now.addingTimeInterval(TimeInterval(days:-125))
-        XCTAssertEqual(review.isNeeded, false)
+        XCTAssertEqual(review.isNeededToRate, false)
         XCTAssertFalse(review.requestIfNeeded())
         XCTAssertEqual(review.launchesCount, 4)
         
@@ -120,11 +120,11 @@ final class IAppRaterTests: XCTestCase {
     func testCustomRules() throws {
         var review = IAppRater(minLaunches: 0, minDays: 0, other: { true }, rateWndType: .standardAlert)
         
-        XCTAssertEqual(review.isNeeded, true)
+        XCTAssertEqual(review.isNeededToRate, true)
         
         review = IAppRater(minLaunches: 0, minDays: 0, other: { false }, rateWndType: .standardAlert)
         
-        XCTAssertEqual(review.isNeeded, false)
+        XCTAssertEqual(review.isNeededToRate, false)
     }
 }
 
