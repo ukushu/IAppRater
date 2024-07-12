@@ -20,7 +20,7 @@ iOS, MacOS
 ## How to use, sample with SwiftUI:
 
 //init custom AppDelegate
-```
+```swift
 import SwiftUI
 
 @main
@@ -31,11 +31,10 @@ struct FocusitoApp: App {
         MainView()
     }
 }
-
 ```
 
 //init AppRater on `DidFinishLaunching` inside of AppDelegate
-```
+```swift
 class AppDelegate: NSObject, NSApplicationDelegate {
     static var shared: AppDelegate!
     
@@ -65,7 +64,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 ```
 
 // We can locate button to open Rate my app alert window
-```
+```swift
 struct MainView : View {
     var body: some View {
         VStack {
@@ -86,10 +85,32 @@ struct MainView : View {
 <img src="https://koenig-media.raywenderlich.com/uploads/2018/10/Simulator-Screen-Shot-iPhone-8-2018-10-27-at-16.39.08.png" height="550">
 
 // Or we can call appStore's alert "Rate my app" 
-```
+```swift
 appRater = IAppRater(...., rateWndType: .appStoreWnd(appId: "1473808464") )
 ```
 <img src="https://i.sstatic.net/IYdbRLUW.png" width="500">
+
+## Extra difficult logic for display panel witn "Rate My App" button:
+```swift
+appRater = IAppRater(minLaunches: 2,
+                     minDays: 2,
+                     other: { [weak self] in // 0
+                        guard let me = self else { return false } // 0
+                        
+                        return (MainViewModel.shared.appState == .Idle || MainViewModel.shared.appState == .Paused) && // 1
+                                Stats.shared.sessions.map{ $0.duration }.sum() > TimeInterval(hrs: 5) && // 2
+                                me.appRater.lastReviewDate == nil // 3
+                     },
+                     rateWndType: .appStoreWnd(appId: "1473808464")
+                    )
+```
+* - min app launches = 2
+* - min days after first app launch = 2
+* 0 - correct way to work with "self" for such situations
+* 1 - if application state is .idle or .paused
+* 2 - if some sessions duration is larger than 5 hrs
+* 3 - if user have never rated app. But if he is rated at least once - never show "rate app" button to user
+
 
 
 ## 🇺🇦🇺🇦🇺🇦 UKRAINE NEEDS YOUR SUPPORT! 🇺🇦🇺🇦🇺🇦
