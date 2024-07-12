@@ -6,7 +6,7 @@
 Tiny lib to show "Rate my app" alert for macOS and iOS apps.
 
 ## SupportedOS:
-iOS, MacOS
+iOS(?), MacOS(>=12)
 
 ## KeyFeatures:
 * Ability to set minimal amount of app launches before yout app perform request to rate your app
@@ -95,16 +95,16 @@ appRater = IAppRater(...., rateWndType: .appStoreWnd(appId: "1473808464") )
 appRater = IAppRater(minLaunches: 2,
                      minDays: 2,
                      other: { me in // 0
-                        return (MainViewModel.shared.appState == .Idle || MainViewModel.shared.appState == .Paused) && // 1
-                                Stats.shared.sessions.map{ $0.duration }.sum() > TimeInterval(hrs: 5) && // 2
-                                me.lastReviewDate == nil // 3
+                        (MainViewModel.shared.appState == .Idle || MainViewModel.shared.appState == .Paused) && // 1
+                            Stats.shared.sessions.map{ $0.duration }.sum() > TimeInterval(hrs: 5) && // 2
+                            me.lastReviewDate == nil // 3
                      },
                      rateWndType: .appStoreWnd(appId: "1473808464")
                     )
 ```
 * - min app launches = 2
 * - min days after first app launch = 2
-* 0 - input of IAppRater's "self" for using some properties if needed some custom purposes with tham
+* 0 - input of IAppRater's "self" for using some properties if needed for some custom purposes with them
 * 1 - if application state is .idle or .paused
 * 2 - if some sessions duration is larger than 5 hrs
 * 3 - if user have never rated app. But if he is rated at least once - never show "rate app" button to user
