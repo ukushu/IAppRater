@@ -70,13 +70,15 @@ struct MainView : View {
         VStack {
             MyMainViewBody()
             
-            if AppDelegate.shared.appRater.isNeeded {
+            if AppDelegate.shared.appRater.isNeededToRate() {
                 Button("Rate my app") { model.showBottomPanel.toggle() }
             } 
         }
     }
 }
 ```
+
+
 
 // We can open standard OS's alert
 
@@ -118,6 +120,8 @@ appRater = IAppRater(minLaunches: 2,
 * 1 - if application state is .idle or .paused
 * 2 - if some sessions duration is larger than 5 hrs (had made after `appRater.firstLaunchDate` )
 * 3 - if user have never rated app. But if he is rated at least once - never show "rate app" button to user
+
+### if you need to debug your "isNeededToRate()" value - you able to set input parameter
 
 
 ## 🇺🇦🇺🇦🇺🇦 UKRAINE NEEDS YOUR SUPPORT! 🇺🇦🇺🇦🇺🇦

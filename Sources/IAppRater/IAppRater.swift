@@ -20,10 +20,22 @@ public class IAppRater {
         if firstLaunchDate == nil { firstLaunchDate = Date.now }
         
         self.launchesCount += 1
-        
     }
     
-    public var isNeededToRate: Bool {
+    public func isNeededToRate(printDbgInfo: Bool = false) -> Bool {
+        if printDbgInfo {
+            let text = """
+                    guard \(String(describing: lastReviewVersion)) != \(appVersion),
+                          \(other(self))
+                    else { return false }
+                    
+                    return \(daysAfterLastReview) >= 125 ||
+                        ( \(launchesCount) >= \(minLaunches) && \(daysAfterFirstLaunch) >= \(minDays) )
+                    """
+            print(text)
+        }
+        
+        
         guard lastReviewVersion != appVersion,
               other(self)
         else { return false }
@@ -34,7 +46,7 @@ public class IAppRater {
     
     @discardableResult
     public func requestIfNeeded() -> Bool {
-        guard isNeededToRate else { return false }
+        guard isNeededToRate() else { return false }
         
         request()
         
@@ -81,8 +93,8 @@ public extension IAppRater {
         set(value) { config.set(value, forKey: "ArrRaterLaunchesCounter") }
     }
     
-    var firstLaunchDate: Date {
-        get { config.object(forKey: "ArrRaterFirstLaunchDate") as? Date ?? Date.now } //it is not nil for sure, but just for a safe case
+    var firstLaunchDate: Date! {
+        get { config.object(forKey: "ArrRaterFirstLaunchDate") as? Date }
         set(value) { config.set(value, forKey: "ArrRaterFirstLaunchDate") }
     }
     

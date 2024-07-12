@@ -17,20 +17,20 @@ final class IAppRaterTests: XCTestCase {
         // Launch 2
         review = IAppRater.prefs_3_0()
         XCTAssertEqual(review.requestIfNeeded(), false)
-        XCTAssertEqual(review.isNeededToRate, false)
+        XCTAssertEqual(review.isNeededToRate(), false)
         
         // Launch 3, need to show review window
         review = IAppRater.prefs_3_0()
-        XCTAssertEqual(review.isNeededToRate, true)
+        XCTAssertEqual(review.isNeededToRate(), true)
         XCTAssertEqual(review.requestIfNeeded(), true)
         XCTAssertEqual(review.launchesCount, 3)
         XCTAssertNotNil(review.lastReviewDate)
         XCTAssertNotNil(review.lastReviewVersion)
-        XCTAssertEqual(review.isNeededToRate, false)
+        XCTAssertEqual(review.isNeededToRate(), false)
         
         // Launch 4
         review = IAppRater.prefs_3_0()
-        XCTAssertEqual(review.isNeededToRate, false)
+        XCTAssertEqual(review.isNeededToRate(), false)
         XCTAssertEqual(review.requestIfNeeded(), false)
         XCTAssertEqual(review.launchesCount, 4)
     }
@@ -43,19 +43,19 @@ final class IAppRaterTests: XCTestCase {
         for i in (1...124) {
             review = IAppRater.prefs_125_0()
             XCTAssertEqual(review.launchesCount, i)
-            XCTAssertEqual(review.isNeededToRate, false)
+            XCTAssertEqual(review.isNeededToRate(), false)
             XCTAssertEqual(review.requestIfNeeded(), false)
         }
         
         //Day 125
         review = IAppRater.prefs_125_0()
         XCTAssertEqual(review.launchesCount, 125)
-        XCTAssertEqual(review.isNeededToRate, true)
+        XCTAssertEqual(review.isNeededToRate(), true)
         XCTAssertEqual(review.requestIfNeeded(), true)
         
         //Day 126
         review = IAppRater.prefs_125_0()
-        XCTAssertEqual(review.isNeededToRate, false)
+        XCTAssertEqual(review.isNeededToRate(), false)
         XCTAssertEqual(review.requestIfNeeded(), false)
         XCTAssertEqual(review.launchesCount, 126)
     }
@@ -95,23 +95,23 @@ final class IAppRaterTests: XCTestCase {
         XCTAssertEqual(review.daysAfterFirstLaunch, 124)
         XCTAssertNil(review.lastReviewDate)
         XCTAssertNil(review.lastReviewVersion)
-        XCTAssertEqual(review.isNeededToRate, false)
+        XCTAssertEqual(review.isNeededToRate(), false)
         XCTAssertFalse(review.requestIfNeeded())
         
         // Launch 4 in 125 days after last review
         review.lastReviewDate = Date.now.addingTimeInterval(TimeInterval(days:-125))
         XCTAssertEqual(review.daysAfterLastReview, 125)
         XCTAssertEqual(review.launchesCount, 4)
-        XCTAssertEqual(review.isNeededToRate, true)
+        XCTAssertEqual(review.isNeededToRate(), true)
         XCTAssertEqual(review.requestIfNeeded(), true)
-        XCTAssertEqual(review.isNeededToRate, false)
+        XCTAssertEqual(review.isNeededToRate(), false)
         XCTAssertFalse(review.requestIfNeeded())
         
         // app version is the same, so no need to show
         review.lastReviewVersion = appVersion
         review.lastReviewDate = Date.now.addingTimeInterval(TimeInterval(days:-125))
         XCTAssertEqual(review.launchesCount, 4)
-        XCTAssertEqual(review.isNeededToRate, false)
+        XCTAssertEqual(review.isNeededToRate(), false)
         XCTAssertEqual(review.requestIfNeeded(), false)
         
         // app version changed, so need to show and lastReviewDate > 125 so need to show
@@ -126,11 +126,11 @@ final class IAppRaterTests: XCTestCase {
     func testCustomRules() throws {
         var review = IAppRater(minLaunches: 0, minDays: 0, other: { _ in true }, rateWndType: .standardAlert)
         
-        XCTAssertEqual(review.isNeededToRate, true)
+        XCTAssertEqual(review.isNeededToRate(), true)
         
         review = IAppRater(minLaunches: 0, minDays: 0, other: { _ in false }, rateWndType: .standardAlert)
         
-        XCTAssertEqual(review.isNeededToRate, false)
+        XCTAssertEqual(review.isNeededToRate(), false)
     }
 }
 
