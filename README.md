@@ -10,7 +10,8 @@ iOS, MacOS
 *  --//-- minimum days of usage --//--
 * Do not ask to rate your app if this version already was rated by user
 * Ability to open standard "Rate Me" alert and as alternative open "Rate me" popup inside of AppStore window
-* Ability to work with custom logic like "show some button if need to rate"
+* Ability to work with custom logic like "Show "Rate my app" button only if rate is needed"
+* Ability to set additional rules for "rate is needed" state :)
 
 
 ## How to use, sample with SwiftUI:
@@ -76,15 +77,15 @@ struct MainView : View {
 ```
 
 // We can open standard OS's alert
-[![Standard OS's "Rate my app" alert][1]][1]
+
+<img src="https://i.sstatic.net/A2gyxsA8.png" width="500" height="200">
+
+<img src="https://koenig-media.raywenderlich.com/uploads/2018/10/Simulator-Screen-Shot-iPhone-8-2018-10-27-at-16.39.08.png" height="550">
 
 // Or we can call appStore's alert "Rate my app" 
 ```
 appRater = IAppRater(...., rateWndType: .appStoreWnd(appId: "1473808464") )
 ```
+<img src="https://i.sstatic.net/IYdbRLUW.png" width="500">
 
-[![enter image description here][2]][2]
 
-
-  [1]: https://i.sstatic.net/A2gyxsA8.png
-  [2]: https://i.sstatic.net/IYdbRLUW.png
