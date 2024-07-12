@@ -52,7 +52,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // if we need custom display logic
         appRater = IAppRater(minLaunches: 10,
                              minDays: 15,
-                             other: { Stats.shared.sessions.count > 100 },
+                             other: { _ in Stats.shared.sessions.count > 100 },
                              rateWndType: .standardAlert
         )
         
@@ -94,19 +94,17 @@ appRater = IAppRater(...., rateWndType: .appStoreWnd(appId: "1473808464") )
 ```swift
 appRater = IAppRater(minLaunches: 2,
                      minDays: 2,
-                     other: { [weak self] in // 0
-                        guard let me = self else { return false } // 0
-                        
+                     other: { me in // 0
                         return (MainViewModel.shared.appState == .Idle || MainViewModel.shared.appState == .Paused) && // 1
                                 Stats.shared.sessions.map{ $0.duration }.sum() > TimeInterval(hrs: 5) && // 2
-                                me.appRater.lastReviewDate == nil // 3
+                                me.lastReviewDate == nil // 3
                      },
                      rateWndType: .appStoreWnd(appId: "1473808464")
                     )
 ```
 * - min app launches = 2
 * - min days after first app launch = 2
-* 0 - correct way to work with "self" for such situations
+* 0 - input of IAppRater's "self" for using some properties if needed some custom purposes with tham
 * 1 - if application state is .idle or .paused
 * 2 - if some sessions duration is larger than 5 hrs
 * 3 - if user have never rated app. But if he is rated at least once - never show "rate app" button to user
