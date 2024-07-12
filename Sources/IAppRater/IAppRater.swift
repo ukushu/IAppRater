@@ -52,6 +52,13 @@ public class IAppRater {
         lastReviewDate = Date.now
         lastReviewVersion = appVersion
     }
+    
+    public func resetIAppRaterData() {
+        launchesCount = 1
+        firstLaunchDate = Date.now
+        lastReviewDate = nil
+        lastReviewVersion = nil
+    }
 }
 
 public enum RateType {
