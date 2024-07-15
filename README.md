@@ -63,7 +63,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 }
 ```
 
-// We can locate button to open Rate my app alert window
+// We can locate button to open some panel
 ```swift
 struct MainView : View {
     var body: some View {
@@ -78,6 +78,20 @@ struct MainView : View {
 }
 ```
 
+// We can locate button  to show "Rate my app" alert
+```swift
+struct MainView : View {
+    var body: some View {
+        VStack {
+            MyMainViewBody()
+            
+            if AppDelegate.shared.appRater.isNeededToRate() {
+                Button("Rate my app") { AppDelegate.shared.appRater.requestIfNeeded() }
+            } 
+        }
+    }
+}
+```
 
 
 // We can open standard OS's alert
