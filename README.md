@@ -92,7 +92,7 @@ appRater = IAppRater(...., rateWndType: .appStoreWnd(appId: "1473808464") )
 ```
 <img src="https://i.sstatic.net/IYdbRLUW.png" width="500">
 
-## Extra difficult logic for display panel witn "Rate My App" button:
+## Extra custom logic for display panel witn "Rate My App" button:
 ```swift
 appRater = IAppRater(minLaunches: 2,
                      minDays: 3,
@@ -118,8 +118,8 @@ appRater = IAppRater(minLaunches: 2,
 * - min days after first app launch = 3
 * 0 - input of IAppRater's "self" for using some properties if needed for some custom purposes with them
 * 1 - if application state is .idle or .paused
-* 2 - if some sessions duration is larger than 5 hrs (had made after `appRater.firstLaunchDate` )
-* 3 - if user have never rated app. But if he is rated at least once - never show "rate app" button to user
+* 2 - if some sessions duration is larger than 5 hrs
+* 3 - if user have never did rate the app. But if he is rated at least once - never show "rate app" button to user
 
 ### if you need to debug your "isNeededToRate()" value - you able to set input parameter
 
