@@ -110,9 +110,9 @@ appRater = IAppRater(...., rateWndType: .appStoreWnd(appId: "1473808464") )
 ```swift
 appRater = IAppRater(minLaunches: 2,
                      minDays: 3,
-                     other: { me in
+                     other: { me in // 0
                         (MainViewModel.shared.appState == .Idle || MainViewModel.shared.appState == .Paused) && // 1
-                            Stats.shared.sessionsLaterThan(date: me.firstLaunchDate).map{ $0.duration }.sum() > TimeInterval(mins: 5) && //2
+                            Stats.shared.sessionsLaterThan(date: me.firstLaunchDate).map{ $0.duration }.sum() > TimeInterval(mins: 5) && // 2
                             me.lastReviewDate == nil // 3
                      },
                      rateWndType: .appStoreWnd(appId: "1473808464")
@@ -130,7 +130,7 @@ appRater = IAppRater(minLaunches: 2,
 ```
 * - min app launches = 2
 * - min days after first app launch = 3
-* 0 - input of IAppRater's "self" for using some properties if needed for some custom purposes with them
+* 0 - me = input of IAppRater's "self" for using some properties if needed for some custom purposes with them
 * 1 - if application state is .idle or .paused
 * 2 - if some sessions duration is larger than 5 hrs
 * 3 - if user have never did rate the app. But if he is rated at least once - never show "rate app" button to user
