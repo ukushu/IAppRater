@@ -79,7 +79,7 @@ final class IAppRaterTests: XCTestCase {
         
         // Launch 3 in 4 days after first launch
         review = IAppRater.prefs_3_125()
-        review.firstLaunchDate = Date.now.addingTimeInterval(TimeInterval(days: -4))
+        review.firstLaunchDate = Date().addingTimeInterval(TimeInterval(days: -4))
         XCTAssertEqual(review.launchesCount, 3)
         XCTAssertEqual(review.daysAfterFirstLaunch, 4)
         XCTAssertFalse(review.requestIfNeeded()) // we expecte request on 3d launch
@@ -90,7 +90,7 @@ final class IAppRaterTests: XCTestCase {
         XCTAssertEqual(review.launchesCount, 4)
         
         // Launch 4 in 124 days after first launch
-        review.firstLaunchDate = Date.now.addingTimeInterval(TimeInterval(days: -124))
+        review.firstLaunchDate = Date().addingTimeInterval(TimeInterval(days: -124))
         XCTAssertEqual(review.launchesCount, 4)
         XCTAssertEqual(review.daysAfterFirstLaunch, 124)
         XCTAssertNil(review.lastReviewDate)
@@ -99,7 +99,7 @@ final class IAppRaterTests: XCTestCase {
         XCTAssertFalse(review.requestIfNeeded())
         
         // Launch 4 in 125 days after last review
-        review.lastReviewDate = Date.now.addingTimeInterval(TimeInterval(days:-125))
+        review.lastReviewDate = Date().addingTimeInterval(TimeInterval(days:-125))
         XCTAssertEqual(review.daysAfterLastReview, 125)
         XCTAssertEqual(review.launchesCount, 4)
         XCTAssertEqual(review.isNeededToRate(), true)
@@ -109,14 +109,14 @@ final class IAppRaterTests: XCTestCase {
         
         // app version is the same, so no need to show
         review.lastReviewVersion = appVersion
-        review.lastReviewDate = Date.now.addingTimeInterval(TimeInterval(days:-125))
+        review.lastReviewDate = Date().addingTimeInterval(TimeInterval(days:-125))
         XCTAssertEqual(review.launchesCount, 4)
         XCTAssertEqual(review.isNeededToRate(), false)
         XCTAssertEqual(review.requestIfNeeded(), false)
         
         // app version changed, so need to show and lastReviewDate > 125 so need to show
         review.lastReviewVersion = "125.0.1"
-        review.lastReviewDate = Date.now.addingTimeInterval(TimeInterval(days:-125))
+        review.lastReviewDate = Date().addingTimeInterval(TimeInterval(days:-125))
         let lastReviewDate = review.lastReviewDate
         XCTAssertTrue(review.requestIfNeeded())
         XCTAssertEqual(review.launchesCount, 4)
