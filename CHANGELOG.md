@@ -1,5 +1,6 @@
 v1.0.2
 * minor fixes
+* added iOS support
 
 v1.0.1
 * Tests improvement

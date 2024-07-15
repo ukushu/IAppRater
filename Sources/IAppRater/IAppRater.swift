@@ -17,7 +17,7 @@ public class IAppRater {
         self.rateWndType = rateWndType
         self.other = other
         
-        if firstLaunchDate == nil { firstLaunchDate = Date.now }
+        if firstLaunchDate == nil { firstLaunchDate = Date() }
         
         self.launchesCount += 1
     }
@@ -62,13 +62,13 @@ public class IAppRater {
             openAppStoreRate(appId: appId)
         }
         
-        lastReviewDate = Date.now
+        lastReviewDate = Date()
         lastReviewVersion = appVersion
     }
     
     public func resetIAppRaterData() {
         launchesCount = 1
-        firstLaunchDate = Date.now
+        firstLaunchDate = Date()
         lastReviewDate = nil
         lastReviewVersion = nil
     }
@@ -109,11 +109,11 @@ public extension IAppRater {
     }
     
     var daysAfterFirstLaunch: Int {
-        return firstLaunchDate.daysDistanceTo(date: Date.now)
+        return firstLaunchDate.daysDistanceTo(date: Date())
     }
     
     var daysAfterLastReview: Int {
-        lastReviewDate?.daysDistanceTo(date: Date.now) ?? 0
+        lastReviewDate?.daysDistanceTo(date: Date()) ?? 0
     }
 }
 
@@ -156,6 +156,12 @@ fileprivate func displayStandartAlert() {
 
 fileprivate func openAppStoreRate(appId: String) {
     if let url = URL(string: "https://apps.apple.com/app/id\(appId)?action=write-review"), !url.absoluteString.isEmpty {
+        #if os(macOS)
         NSWorkspace.shared.open(url)
+        #endif
+        
+        #if os(iOS)
+        UIApplication.shared.open(url)
+        #endif
     }
 }
