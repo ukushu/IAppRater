@@ -12,9 +12,9 @@ iOS(?), MacOS(>=12)
 * Ability to set minimal amount of app launches before yout app perform request to rate your app
 *  --//-- minimum days of usage --//--
 * Do not ask to rate your app if this version already was rated by user
-* Ability to open standard "Rate Me" alert and as alternative open "Rate me" popup inside of AppStore window
-* Ability to work with custom logic like "Show "Rate my app" button only if rate is needed"
-* Ability to set additional rules for "rate is needed" state :)
+* Ability to open standard "Rate Me" alert OR open "Rate me" popup inside of AppStore window
+* Ability to work with custom View logic like "Show "Rate my app" button only if rate is needed"
+* Ability to set additional custom rules for "rate is needed" state :)
 
 
 ## How to use, sample with SwiftUI:
