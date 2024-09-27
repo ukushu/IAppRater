@@ -166,20 +166,21 @@ fileprivate func displayStandartAlert() {
 @available(macOS 12, *)
 fileprivate func openAppStoreRate(appId: String) {
     if let url = URL(string: "https://apps.apple.com/app/id\(appId)?action=write-review"), !url.absoluteString.isEmpty {
-        
         // fix of unsupported openAppStoreRate url functionality for iOS 15.0 & macOS 15, forcing displayStandartAlert
-        if #available(iOS 14.0, *) {
-            displayStandartAlert()
-        } else if #available(macOS 14, *) {
+        #if os(macOS)
+        if #available(macOS 15, *) {
             displayStandartAlert()
         } else {
-            #if os(macOS)
-                NSWorkspace.shared.open(url)
-            #endif
-                
-            #if os(iOS)
-                UIApplication.shared.open(url)
-            #endif
+            NSWorkspace.shared.open(url)
         }
+        #endif
+            
+        #if os(iOS)
+        if #available(iOS 14.0, *) {
+            displayStandartAlert()
+        } else {
+            UIApplication.shared.open(url)
+        }
+        #endif
     }
 }
