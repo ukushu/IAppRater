@@ -1,4 +1,5 @@
 import StoreKit
+import SwiftUI
 
 @available(macOS 12, *)
 public class IAppRater {
@@ -25,10 +26,13 @@ public class IAppRater {
     public func isNeededToRate(printDbgInfo: Bool = false) -> Bool {
         if printDbgInfo {
             let text = """
+                    guard lastReviewVersion != appVersion, other(self) else { return false }
                     guard \(String(describing: lastReviewVersion)) != \(appVersion),
                           \(other(self))
                     else { return false }
                     
+                    return daysAfterLastReview >= 125 ||
+                        ( launchesCount >= minLaunches && daysAfterFirstLaunch >= minDays )
                     return \(daysAfterLastReview) >= 125 ||
                         ( \(launchesCount) >= \(minLaunches) && \(daysAfterFirstLaunch) >= \(minDays) )
                     """
@@ -149,7 +153,12 @@ fileprivate func displayStandartAlert() {
             SKStoreReviewController.requestReview()
         }
 #else
-        SKStoreReviewController.requestReview()
+        if #available(macOS 14, *) {
+            let a = NSViewController()
+            AppStore.requestReview(in: a)
+        } else {
+            SKStoreReviewController.requestReview()
+        }
 #endif
     }
 }
