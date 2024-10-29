@@ -25,27 +25,29 @@ public class IAppRater {
     
     public func isNeededToRate(printDbgInfo: Bool = false) -> Bool {
         if printDbgInfo {
-            let text = """
-                    ---
-                    guard lastReviewVersion[\(String(describing: lastReviewVersion))] != appVersion[\(appVersion)], 
-                          other(self) [\(other(self))] 
-                    else { return false }
-                    
-                    return daysAfterLastReview[\(daysAfterLastReview)] >= 125 ||
-                        ( launchesCount[\(launchesCount)] >= minLaunches[\(minLaunches)] && daysAfterFirstLaunch[\(daysAfterFirstLaunch)] >= minDays[\(minDays)] )
-                    ---
-                    
-                    """
-            
-            print(text)
+            print("""
+            ---
+            guard lastReviewVersion [\(String(describing: lastReviewVersion))] != appVersion[\(appVersion)] else { return false }
+            """)
         }
         
-        guard lastReviewVersion != appVersion,
-              other(self)
-        else { return false }
+        guard lastReviewVersion != appVersion else { return false }
         
-        return daysAfterLastReview >= 125 ||
-            ( launchesCount >= minLaunches && daysAfterFirstLaunch >= minDays )
+        if printDbgInfo {
+            print("""
+            guard customUserRequirements [\(other(self))] else { return false }
+            """)
+        }
+        
+        guard other(self) else { return false }
+        
+        if printDbgInfo {
+            print("""
+            return daysAfterLastReview[\(daysAfterLastReview)] >= 125 || ( launchesCount[\(launchesCount)] >= minLaunches[\(minLaunches)] && daysAfterFirstLaunch[\(daysAfterFirstLaunch)] >= minDays[\(minDays)] )
+            """)
+        }
+        
+        return daysAfterLastReview >= 125 || ( launchesCount >= minLaunches && daysAfterFirstLaunch >= minDays )
     }
     
     @discardableResult
