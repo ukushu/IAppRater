@@ -26,19 +26,19 @@ public class IAppRater {
     public func isNeededToRate(printDbgInfo: Bool = false) -> Bool {
         if printDbgInfo {
             let text = """
-                    guard lastReviewVersion != appVersion, other(self) else { return false }
-                    guard \(String(describing: lastReviewVersion)) != \(appVersion),
-                          \(other(self))
+                    ---
+                    guard lastReviewVersion[\(String(describing: lastReviewVersion))] != appVersion[\(appVersion)], 
+                          other(self) [\(other(self))] 
                     else { return false }
                     
-                    return daysAfterLastReview >= 125 ||
-                        ( launchesCount >= minLaunches && daysAfterFirstLaunch >= minDays )
-                    return \(daysAfterLastReview) >= 125 ||
-                        ( \(launchesCount) >= \(minLaunches) && \(daysAfterFirstLaunch) >= \(minDays) )
+                    return daysAfterLastReview[\(daysAfterLastReview)] >= 125 ||
+                        ( launchesCount[\(launchesCount)] >= minLaunches[\(minLaunches)] && daysAfterFirstLaunch[\(daysAfterFirstLaunch)] >= minDays[\(minDays)] )
+                    ---
+                    
                     """
+            
             print(text)
         }
-        
         
         guard lastReviewVersion != appVersion,
               other(self)
