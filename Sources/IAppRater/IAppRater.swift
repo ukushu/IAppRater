@@ -115,7 +115,7 @@ public extension IAppRater {
     }
     
     var daysAfterFirstLaunch: Int {
-        return firstLaunchDate.daysDistanceTo(date: Date())
+        firstLaunchDate.daysDistanceTo(date: Date())
     }
     
     var daysAfterLastReview: Int {
@@ -135,7 +135,11 @@ internal var appVersion: String {
 
 fileprivate extension Date {
     func daysDistanceTo(date end: Date) -> Int {
-        Calendar.current.dateComponents([.day], from: self, to: end).day ?? 0
+        if let days = Calendar.current.dateComponents([.day], from: self, to: end).day {
+            return days
+        }
+        
+        return 0
     }
 }
 
@@ -170,19 +174,11 @@ fileprivate func openAppStoreRate(appId: String) {
     if let url = URL(string: "https://apps.apple.com/app/id\(appId)?action=write-review"), !url.absoluteString.isEmpty {
         // fix of unsupported openAppStoreRate url functionality for iOS 15.0 & macOS 15, forcing displayStandartAlert
         #if os(macOS)
-        if #available(macOS 15, *) {
-            displayStandartAlert()
-        } else {
-            NSWorkspace.shared.open(url)
-        }
+        NSWorkspace.shared.open(url)
         #endif
             
         #if os(iOS)
-        if #available(iOS 14.0, *) {
-            displayStandartAlert()
-        } else {
-            UIApplication.shared.open(url)
-        }
+        UIApplication.shared.open(url)
         #endif
     }
 }
