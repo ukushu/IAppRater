@@ -1,8 +1,16 @@
 import StoreKit
-import SwiftUI
+#if os(iOS)
+import UIKit
+#else
+import AppKit
+#endif
 
-@available(macOS 12, *)
+@available(iOS 10.3, macOS 12, *)
 public class IAppRater {
+    private static let requestLock = NSLock()
+    private static var requestPending = false
+    private static var requestGeneration = 0
+
     public let minLaunches: Int
     public let minDays: Int
     
@@ -26,22 +34,24 @@ public class IAppRater {
     }
     
     public func isNeededToRate(printDbgInfo: Bool = false) -> Bool {
+        let currentAppVersion = appVersion
         if printDbgInfo {
             print("""
             ---
-            guard lastReviewVersion [\(String(describing: lastReviewVersion))] != appVersion[\(appVersion)] else { return false }
+            guard lastReviewVersion [\(String(describing: lastReviewVersion))] != appVersion[\(currentAppVersion)] else { return false }
             """)
         }
         
-        guard lastReviewVersion != appVersion else { return false }
+        guard lastReviewVersion != currentAppVersion else { return false }
         
+        let customRequirementsMet = other(self)
         if printDbgInfo {
             print("""
-            guard customUserRequirements [\(other(self))] else { return false }
+            guard customUserRequirements [\(customRequirementsMet)] else { return false }
             """)
         }
         
-        guard other(self) else { return false }
+        guard customRequirementsMet else { return false }
         
         if printDbgInfo {
             print("""
@@ -55,27 +65,64 @@ public class IAppRater {
     
     @discardableResult
     public func requestIfNeeded() -> Bool {
-        guard isNeededToRate() else { return false }
-        
-        request()
-        
+        Self.requestLock.lock()
+        guard !Self.requestPending else {
+            Self.requestLock.unlock()
+            return false
+        }
+        Self.requestPending = true
+        let generation = Self.requestGeneration
+        Self.requestLock.unlock()
+        guard isNeededToRate() else {
+            Self.finishRequest(generation)
+            return false
+        }
+        performRequest { [weak self] succeeded in
+            Self.finishRequest(generation) { if succeeded { self?.recordRequest() } }
+        }
         return true
     }
     
     /// Use this method only for custom rate logic, or use requestIfNeeded() instead
     public func request() {
-        switch self.rateWndType {
-        case .standardAlert:
-            displayStandartAlert()
-        case .appStoreWnd(let appId):
-            openAppStoreRate(appId: appId)
+        Self.requestLock.lock()
+        guard !Self.requestPending else { Self.requestLock.unlock(); return }
+        Self.requestPending = true
+        let generation = Self.requestGeneration
+        Self.requestLock.unlock()
+        performRequest { [weak self] succeeded in
+            Self.finishRequest(generation) { if succeeded { self?.recordRequest() } }
         }
-        
+    }
+
+    private static func finishRequest(_ generation: Int, record: () -> Void = {}) {
+        requestLock.lock()
+        if requestGeneration == generation {
+            record()
+            requestPending = false
+        }
+        requestLock.unlock()
+    }
+
+    private func recordRequest() {
         lastReviewDate = Date()
         lastReviewVersion = appVersion
     }
+
+    private func performRequest(completion: @escaping (Bool) -> Void) {
+        switch rateWndType {
+        case .standardAlert:
+            displayStandartAlert(completion: completion)
+        case .appStoreWnd(let appId):
+            openAppStoreRate(appId: appId, completion: completion)
+        }
+    }
     
     public func resetIAppRaterData() {
+        Self.requestLock.lock()
+        Self.requestGeneration += 1
+        Self.requestPending = false
+        Self.requestLock.unlock()
         launchesCount = 1
         firstLaunchDate = Date()
         lastReviewDate = nil
@@ -97,7 +144,7 @@ public enum RateType {
     case appStoreWnd(appId: String)
 }
 
-@available(macOS 12, *)
+@available(iOS 10.3, macOS 12, *)
 public extension IAppRater {
     var launchesCount: Int {
         get { config.integer(forKey: "ArrRaterLaunchesCounter") }
@@ -120,7 +167,7 @@ public extension IAppRater {
     }
     
     var daysAfterFirstLaunch: Int {
-        firstLaunchDate.daysDistanceTo(date: Date())
+        firstLaunchDate?.daysDistanceTo(date: Date()) ?? 0
     }
     
     var daysAfterLastReview: Int {
@@ -133,7 +180,7 @@ public extension IAppRater {
 ///////////////////////
 
 internal var appVersion: String {
-    Bundle.main.object( forInfoDictionaryKey: "CFBundleShortVersionString" ) as! String
+    Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
 }
 
  
@@ -152,38 +199,40 @@ fileprivate extension Date {
 ///Show AppReview wnd
 ///////////////////////
 
-@available(macOS 12, *)
-fileprivate func displayStandartAlert() {
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+@available(iOS 10.3, macOS 12, *)
+fileprivate func displayStandartAlert(completion: @escaping (Bool) -> Void) {
+    DispatchQueue.main.async {
 #if os(iOS)
         if #available(iOS 14.0, *) {
-            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                SKStoreReviewController.requestReview(in: scene)
+            guard let scene = UIApplication.shared.connectedScenes
+                .compactMap({ $0 as? UIWindowScene }).first(where: { $0.activationState == .foregroundActive }) else {
+                completion(false)
+                return
             }
+            SKStoreReviewController.requestReview(in: scene)
+            completion(true)
         } else {
             SKStoreReviewController.requestReview()
+            completion(true)
         }
 #else
-        if #available(macOS 14, *) {
-            let a = NSViewController()
-            AppStore.requestReview(in: a)
-        } else {
-            SKStoreReviewController.requestReview()
-        }
+        SKStoreReviewController.requestReview()
+        completion(true)
 #endif
     }
 }
 
-@available(macOS 12, *)
-fileprivate func openAppStoreRate(appId: String) {
-    if let url = URL(string: "https://apps.apple.com/app/id\(appId)?action=write-review"), !url.absoluteString.isEmpty {
-        // fix of unsupported openAppStoreRate url functionality for iOS 15.0 & macOS 15, forcing displayStandartAlert
-        #if os(macOS)
-        NSWorkspace.shared.open(url)
-        #endif
-            
-        #if os(iOS)
-        UIApplication.shared.open(url)
-        #endif
+@available(iOS 10.3, macOS 12, *)
+fileprivate func openAppStoreRate(appId: String, completion: @escaping (Bool) -> Void) {
+    guard let url = URL(string: "https://apps.apple.com/app/id\(appId)?action=write-review") else {
+        completion(false)
+        return
+    }
+    DispatchQueue.main.async {
+#if os(macOS)
+        completion(NSWorkspace.shared.open(url))
+#else
+        UIApplication.shared.open(url, completionHandler: completion)
+#endif
     }
 }

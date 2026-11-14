@@ -3,15 +3,15 @@
 <img src="https://github.com/ukushu/IAppRater/blob/main/IAppRaterLogo.png" width="170">
 
 
-Tiny lib to show "Rate my app" alert for macOS and iOS apps.
+Tiny lib to request an App Store review for macOS and iOS apps.
 
-## SupportedOS:
-iOS(?), MacOS(>=12)
+## Supported OS
+iOS 10.3+, macOS 12+
 
 ## KeyFeatures:
 * Ability to set minimal amount of app launches before yout app perform request to rate your app
 *  --//-- minimum days of usage --//--
-* Do not ask to rate your app if this version already was rated by user
+* Do not request another review for a version after a request was submitted to the system
 * Ability to open standard "Rate Me" alert OR open "Rate me" popup inside of AppStore window
 * Ability to work with custom View logic like "Show "Rate my app" button only if rate is needed"
 * Ability to set additional custom rules for "rate is needed" state :)
@@ -33,6 +33,8 @@ rater.pointsReset()    // export error
 ```
 
 The balance never drops below zero. `currentPoints` returns the balance after applying decay. Decay is applied in whole 24-hour steps to the shared balance: new points do not get a separate aging clock, and adding points preserves the current partial-day interval. `halfLifeDays` is the number of full days over which the balance halves.
+
+`requestIfNeeded()` returns `true` when the request is accepted for asynchronous handling. A successful StoreKit call or App Store URL open is recorded as an attempt; the library cannot tell whether the system displayed the prompt or whether the user submitted a review.
 
 
 ## How to use, sample with SwiftUI:

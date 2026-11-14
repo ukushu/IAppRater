@@ -4,6 +4,7 @@ import XCTest
 final class IAppRaterTests: XCTestCase {
     override func setUp() {
         UserDefaults.standard.clear()
+        waitForMainQueue()
     }
     
     func testMinLaunches_1() throws {
@@ -23,6 +24,7 @@ final class IAppRaterTests: XCTestCase {
         review = IAppRater.prefs_3_0()
         XCTAssertEqual(review.isNeededToRate(), true)
         XCTAssertEqual(review.requestIfNeeded(), true)
+        waitForRequestRecord()
         XCTAssertEqual(review.launchesCount, 3)
         XCTAssertNotNil(review.lastReviewDate)
         XCTAssertNotNil(review.lastReviewVersion)
@@ -52,6 +54,7 @@ final class IAppRaterTests: XCTestCase {
         XCTAssertEqual(review.launchesCount, 125)
         XCTAssertEqual(review.isNeededToRate(), true)
         XCTAssertEqual(review.requestIfNeeded(), true)
+        waitForRequestRecord()
         
         //Day 126
         review = IAppRater.prefs_125_0()
@@ -104,6 +107,7 @@ final class IAppRaterTests: XCTestCase {
         XCTAssertEqual(review.launchesCount, 4)
         XCTAssertEqual(review.isNeededToRate(), true)
         XCTAssertEqual(review.requestIfNeeded(), true)
+        waitForRequestRecord()
         XCTAssertEqual(review.isNeededToRate(), false)
         XCTAssertFalse(review.requestIfNeeded())
         
@@ -119,6 +123,7 @@ final class IAppRaterTests: XCTestCase {
         review.lastReviewDate = daysAgo(125)
         let lastReviewDate = review.lastReviewDate
         XCTAssertTrue(review.requestIfNeeded())
+        waitForRequestRecord()
         XCTAssertEqual(review.launchesCount, 4)
         XCTAssertNotEqual(review.lastReviewDate, lastReviewDate)
     }
@@ -173,7 +178,7 @@ final class IAppRaterTests: XCTestCase {
     }
 
     func testPointsGateAppliesAfter125DaysAndRequestPreservesBalance() {
-        let review = IAppRater(minLaunches: 0, minDays: 0,
+        let review = IAppRater(minLaunches: 1_000, minDays: 1_000,
                                points: PointsConfiguration(threshold: 10, halfLifeDays: 30),
                                rateWndType: .standardAlert)
         review.lastReviewDate = daysAgo(125)
@@ -194,10 +199,46 @@ final class IAppRaterTests: XCTestCase {
         }
         XCTAssertEqual(review.currentPoints, 1_000, accuracy: 0.001)
     }
+
+    func testConcurrentRequestIfNeededReservesOneRequestAcrossInstances() {
+        let first = IAppRater(rateWndType: .standardAlert)
+        let second = IAppRater(rateWndType: .standardAlert)
+        let acceptedRequests = NSLock()
+        var acceptedCount = 0
+
+        DispatchQueue.concurrentPerform(iterations: 100) { index in
+            if (index.isMultiple(of: 2) ? first : second).requestIfNeeded() {
+                acceptedRequests.lock()
+                acceptedCount += 1
+                acceptedRequests.unlock()
+            }
+        }
+
+        XCTAssertEqual(acceptedCount, 1)
+    }
 }
 
 private func daysAgo(_ days: Int) -> Date {
     Calendar.current.date(byAdding: .day, value: -days, to: Calendar.current.startOfDay(for: Date()))!
+}
+
+private func waitForMainQueue() {
+    let expectation = XCTestExpectation(description: "main queue request completes")
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { expectation.fulfill() }
+    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 1), .completed)
+}
+
+private func waitForRequestRecord() {
+    let expectation = XCTestExpectation(description: "review request is recorded")
+    func checkForRequestRecord() {
+        if UserDefaults.standard.string(forKey: "ArrRaterLastReviewVersion") != nil {
+            expectation.fulfill()
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01, execute: checkForRequestRecord)
+        }
+    }
+    DispatchQueue.main.async(execute: checkForRequestRecord)
+    XCTAssertEqual(XCTWaiter.wait(for: [expectation], timeout: 2), .completed)
 }
 
 fileprivate extension UserDefaults {
