@@ -11,12 +11,14 @@ public class IAppRater {
     private let config = UserDefaults.standard
     
     private let other: (IAppRater) -> Bool
+    let pointsConfiguration: PointsConfiguration?
     
-    public init(minLaunches: Int = 0, minDays: Int = 0, other: @escaping (IAppRater) -> Bool = { _ in true }, rateWndType: RateType) {
+    public init(minLaunches: Int = 0, minDays: Int = 0, other: @escaping (IAppRater) -> Bool = { _ in true }, points: PointsConfiguration? = nil, rateWndType: RateType) {
         self.minLaunches = minLaunches
         self.minDays = minDays
         self.rateWndType = rateWndType
         self.other = other
+        self.pointsConfiguration = points
         
         if firstLaunchDate == nil { firstLaunchDate = Date() }
         
@@ -47,7 +49,8 @@ public class IAppRater {
             """)
         }
         
-        return daysAfterLastReview >= 125 || ( launchesCount >= minLaunches && daysAfterFirstLaunch >= minDays )
+        let pointsReached = pointsConfiguration.map { currentPoints >= $0.threshold } ?? true
+        return pointsReached && (daysAfterLastReview >= 125 || ( launchesCount >= minLaunches && daysAfterFirstLaunch >= minDays ))
     }
     
     @discardableResult
@@ -77,7 +80,9 @@ public class IAppRater {
         firstLaunchDate = Date()
         lastReviewDate = nil
         lastReviewVersion = nil
+        pointsReset()
     }
+
 }
 
 public enum RateType {

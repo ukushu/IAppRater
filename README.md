@@ -15,6 +15,24 @@ iOS(?), MacOS(>=12)
 * Ability to open standard "Rate Me" alert OR open "Rate me" popup inside of AppStore window
 * Ability to work with custom View logic like "Show "Rate my app" button only if rate is needed"
 * Ability to set additional custom rules for "rate is needed" state :)
+* Optional points threshold with configurable decay for user actions
+
+## Optional points scoring
+
+Points are stored in `UserDefaults` and decay over time according to the configured half-life. The threshold is an additional requirement in `isNeededToRate()` and `requestIfNeeded()`; without `points`, existing behavior is unchanged.
+
+```swift
+let rater = IAppRater(minLaunches: 5,
+                      minDays: 3,
+                      points: PointsConfiguration(threshold: 30, halfLifeDays: 7),
+                      rateWndType: .standardAlert)
+
+rater.pointsAdd(10)    // successful export
+rater.pointsRemove(5)  // canceled export
+rater.pointsReset()    // export error
+```
+
+The balance never drops below zero. `currentPoints` returns the balance after applying decay. Decay is applied in whole 24-hour steps to the shared balance: new points do not get a separate aging clock, and adding points preserves the current partial-day interval. `halfLifeDays` is the number of full days over which the balance halves.
 
 
 ## How to use, sample with SwiftUI:

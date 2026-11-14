@@ -79,7 +79,7 @@ final class IAppRaterTests: XCTestCase {
         
         // Launch 3 in 4 days after first launch
         review = IAppRater.prefs_3_125()
-        review.firstLaunchDate = Date().addingTimeInterval(TimeInterval(days: -4))
+        review.firstLaunchDate = daysAgo(4)
         XCTAssertEqual(review.launchesCount, 3)
         XCTAssertEqual(review.daysAfterFirstLaunch, 4)
         XCTAssertFalse(review.requestIfNeeded()) // we expecte request on 3d launch
@@ -90,7 +90,7 @@ final class IAppRaterTests: XCTestCase {
         XCTAssertEqual(review.launchesCount, 4)
         
         // Launch 4 in 124 days after first launch
-        review.firstLaunchDate = Date().addingTimeInterval(TimeInterval(days: -124))
+        review.firstLaunchDate = daysAgo(124)
         XCTAssertEqual(review.launchesCount, 4)
         XCTAssertEqual(review.daysAfterFirstLaunch, 124)
         XCTAssertNil(review.lastReviewDate)
@@ -99,7 +99,7 @@ final class IAppRaterTests: XCTestCase {
         XCTAssertFalse(review.requestIfNeeded())
         
         // Launch 4 in 125 days after last review
-        review.lastReviewDate = Date().addingTimeInterval(TimeInterval(days:-125))
+        review.lastReviewDate = daysAgo(125)
         XCTAssertEqual(review.daysAfterLastReview, 125)
         XCTAssertEqual(review.launchesCount, 4)
         XCTAssertEqual(review.isNeededToRate(), true)
@@ -109,14 +109,14 @@ final class IAppRaterTests: XCTestCase {
         
         // app version is the same, so no need to show
         review.lastReviewVersion = appVersion
-        review.lastReviewDate = Date().addingTimeInterval(TimeInterval(days:-125))
+        review.lastReviewDate = daysAgo(125)
         XCTAssertEqual(review.launchesCount, 4)
         XCTAssertEqual(review.isNeededToRate(), false)
         XCTAssertEqual(review.requestIfNeeded(), false)
         
         // app version changed, so need to show and lastReviewDate > 125 so need to show
         review.lastReviewVersion = "125.0.1"
-        review.lastReviewDate = Date().addingTimeInterval(TimeInterval(days:-125))
+        review.lastReviewDate = daysAgo(125)
         let lastReviewDate = review.lastReviewDate
         XCTAssertTrue(review.requestIfNeeded())
         XCTAssertEqual(review.launchesCount, 4)
@@ -132,6 +132,72 @@ final class IAppRaterTests: XCTestCase {
         
         XCTAssertEqual(review.isNeededToRate(), false)
     }
+
+    func testPointsGateAndDecay() {
+        let review = IAppRater(minLaunches: 0, minDays: 0,
+                               points: PointsConfiguration(threshold: 10, halfLifeDays: 1),
+                               rateWndType: .standardAlert)
+        XCTAssertFalse(review.isNeededToRate())
+        review.pointsAdd(10)
+        XCTAssertEqual(review.currentPoints, 10, accuracy: 0.001)
+        XCTAssertTrue(review.isNeededToRate())
+        review.pointsAdd(.infinity)
+        review.pointsRemove(-1)
+        XCTAssertEqual(review.currentPoints, 10, accuracy: 0.001)
+        let reopened = IAppRater(minLaunches: 0, minDays: 0,
+                                 points: PointsConfiguration(threshold: 10, halfLifeDays: 1),
+                                 rateWndType: .standardAlert)
+        XCTAssertEqual(reopened.currentPoints, 10, accuracy: 0.001)
+        UserDefaults.standard.set(Date().addingTimeInterval(-86_400), forKey: "IAppRaterPointsUpdatedAt")
+        XCTAssertEqual(review.currentPoints, 5, accuracy: 0.01)
+        XCTAssertFalse(review.isNeededToRate())
+        review.pointsRemove(20)
+        XCTAssertEqual(review.currentPoints, 0, accuracy: 0.001)
+        review.pointsAdd(12)
+        review.pointsReset()
+        XCTAssertEqual(review.currentPoints, 0, accuracy: 0.001)
+    }
+
+    func testPointsDecayKeepsPartialDayAcrossUpdates() {
+        let review = IAppRater(minLaunches: 0, minDays: 0,
+                               points: PointsConfiguration(threshold: 0, halfLifeDays: 1),
+                               rateWndType: .standardAlert)
+        review.pointsAdd(8)
+        let dayAnchor = Date().addingTimeInterval(-23 * 60 * 60)
+        UserDefaults.standard.set(dayAnchor, forKey: "IAppRaterPointsUpdatedAt")
+
+        review.pointsAdd(2)
+
+        XCTAssertEqual(review.currentPoints, 10, accuracy: 0.001)
+        XCTAssertEqual(UserDefaults.standard.object(forKey: "IAppRaterPointsUpdatedAt") as? Date, dayAnchor)
+    }
+
+    func testPointsGateAppliesAfter125DaysAndRequestPreservesBalance() {
+        let review = IAppRater(minLaunches: 0, minDays: 0,
+                               points: PointsConfiguration(threshold: 10, halfLifeDays: 30),
+                               rateWndType: .standardAlert)
+        review.lastReviewDate = daysAgo(125)
+        review.lastReviewVersion = "older-version"
+
+        XCTAssertFalse(review.requestIfNeeded())
+        review.pointsAdd(10)
+        XCTAssertTrue(review.requestIfNeeded())
+        XCTAssertEqual(review.currentPoints, 10, accuracy: 0.001)
+    }
+
+    func testConcurrentPointsAddsAreNotLost() {
+        let review = IAppRater(minLaunches: 0, minDays: 0,
+                               points: PointsConfiguration(threshold: 0, halfLifeDays: 1),
+                               rateWndType: .standardAlert)
+        DispatchQueue.concurrentPerform(iterations: 1_000) { _ in
+            review.pointsAdd(1)
+        }
+        XCTAssertEqual(review.currentPoints, 1_000, accuracy: 0.001)
+    }
+}
+
+private func daysAgo(_ days: Int) -> Date {
+    Calendar.current.date(byAdding: .day, value: -days, to: Calendar.current.startOfDay(for: Date()))!
 }
 
 fileprivate extension UserDefaults {
